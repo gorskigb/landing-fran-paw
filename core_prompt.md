@@ -121,17 +121,30 @@ Secondary CTAs: View portfolio, download brochure, contact information
 
 Create a professional, trustworthy landing page that positions FRAN-PAW as the premier choice for container building solutions in Poland, with clear paths for lead generation and customer engagement.
 
-## File Structure & Development Approach
-**Single-File Implementation (for Claude Code):**
-Generate as a single HTML file with:
-- Inline CSS in `<style>` tags (organized by sections)
-- Inline JavaScript in `<script>` tags (modular approach)
-- Embedded SVG icons where possible
-- Base64 encoded small images or use placeholder image services
-- External CDN links for recommended libraries
+## Common Issues & Solutions
 
-**Alternative Multi-File Structure (for production):**
-If deploying separately, organize as:
+### CDN & External Dependencies
+- **Issue**: CDNJS sometimes blocks resources or has MIME type issues
+- **Solution**: Use UNPKG CDN for better reliability
+- **Fallback**: Always implement error handling for missing libraries
+
+### Visual Elements
+- **Issue**: External images may fail to load (404 errors)
+- **Solution**: Use CSS gradients as primary backgrounds, external images as enhancement only
+- **Implementation**: `background: gradient, url(image)` - gradient shows if image fails
+
+### JavaScript Errors
+- **Issue**: `querySelector('#')` throws "not a valid selector" error
+- **Solution**: Validate href attributes before using as selectors
+- **Code**: Check for empty or "#" only hrefs and handle specially
+
+### CSS Specificity
+- **Issue**: Button text colors may not show due to specificity conflicts
+- **Solution**: Use explicit colors with `!important` for critical UI elements
+- **Example**: `color: #ffffff !important;` for CTA buttons
+
+## File Structure & Development Approach
+Organize the project with proper separation of concerns:
 ```
 fran-paw-landing/
 ├── index.html
@@ -152,18 +165,26 @@ fran-paw-landing/
 └── README.md
 ```
 
-**CDN Resources to Include:**
+**CDN Resources (Recommended - Tested & Working):**
 ```html
-<!-- Animation Libraries -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.min.js"></script>
-
-<!-- Gallery/Carousel -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/8.4.5/swiper-bundle.min.js"></script>
-
 <!-- Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <!-- Icons -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+<!-- Animation Library (AOS) -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+<!-- Gallery/Carousel (Swiper) -->
+<link href="https://unpkg.com/swiper@8/swiper-bundle.min.css" rel="stylesheet">
+<script src="https://unpkg.com/swiper@8/swiper-bundle.min.js"></script>
 ```
+
+**Important Implementation Notes:**
+- Use UNPKG CDN for AOS and Swiper (more reliable than CDNJS)
+- Implement error handling in JavaScript for missing libraries
+- Use gradient backgrounds instead of external images for better reliability
+- Include explicit color declarations with `!important` for critical UI elements
+- Handle anchor links carefully to avoid selector errors with "#" hrefs
