@@ -484,44 +484,7 @@
             }
         });
 
-        // Contact form handling
-        const contactForm = document.getElementById('contactForm');
-        if (contactForm) {
-            contactForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                // Get form data
-                const formData = new FormData(this);
-                const data = Object.fromEntries(formData);
-                
-                // Basic validation
-                if (!data.name || !data.email || !data.projectType || !data.message) {
-                    alert('Proszę wypełnić wszystkie wymagane pola.');
-                    return;
-                }
-
-                // Email validation
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(data.email)) {
-                    alert('Proszę podać prawidłowy adres email.');
-                    return;
-                }
-
-                // Simulate form submission
-                const submitButton = this.querySelector('button[type="submit"]');
-                const originalText = submitButton.textContent;
-                submitButton.textContent = 'Wysyłanie...';
-                submitButton.disabled = true;
-
-                // Simulate API call
-                setTimeout(() => {
-                    alert('Dziękujemy za zapytanie! Skontaktujemy się z Tobą w ciągu 24 godzin.');
-                    this.reset();
-                    submitButton.textContent = originalText;
-                    submitButton.disabled = false;
-                }, 1500);
-            });
-        }
+        // Contact form handling is done in js/forms.js
 
         // Add loading animation to CTA buttons
         document.querySelectorAll('.cta-button, .cta-primary').forEach(button => {
