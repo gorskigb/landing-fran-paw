@@ -420,27 +420,6 @@
             }
         });
 
-        // Mobile menu toggle
-        const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
-        const navMenu = document.querySelector('.nav-menu');
-
-        mobileMenuToggle.addEventListener('click', function() {
-            navMenu.classList.toggle('active');
-            const icon = this.querySelector('i');
-            icon.classList.toggle('fa-bars');
-            icon.classList.toggle('fa-times');
-        });
-
-        // Close mobile menu when clicking on a link
-        document.querySelectorAll('.nav-menu a').forEach(link => {
-            link.addEventListener('click', function() {
-                navMenu.classList.remove('active');
-                const icon = mobileMenuToggle.querySelector('i');
-                icon.classList.add('fa-bars');
-                icon.classList.remove('fa-times');
-            });
-        });
-
         // Smooth scrolling for navigation links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
@@ -455,126 +434,12 @@
             });
         });
 
-        // Initialize Swiper gallery
-        const gallerySwiper = new Swiper('.gallerySwiper', {
-            slidesPerView: 1,
-            spaceBetween: 20,
-            loop: true,
-            autoplay: {
-                delay: 5000,
-                disableOnInteraction: false,
-            },
-            pagination: {
-                el: '.swiper-pagination',
-                clickable: true,
-            },
-            navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
-            },
-            breakpoints: {
-                768: {
-                    slidesPerView: 2,
-                    spaceBetween: 30,
-                },
-                1024: {
-                    slidesPerView: 3,
-                    spaceBetween: 30,
-                }
-            }
-        });
-
         // Contact form handling is done in js/forms.js
+        // Gallery initialization is done in js/gallery.js
 
-        // Add loading animation to CTA buttons
-        document.querySelectorAll('.cta-button, .cta-primary').forEach(button => {
-            button.addEventListener('click', function(e) {
-                if (!this.href || !this.href.includes('#')) {
-                    // Add loading animation for external actions
-                    const originalText = this.textContent;
-                    this.style.position = 'relative';
-                    this.style.overflow = 'hidden';
-                    
-                    const ripple = document.createElement('span');
-                    ripple.style.cssText = `
-                        position: absolute;
-                        border-radius: 50%;
-                        background: rgba(255,255,255,0.3);
-                        transform: scale(0);
-                        animation: ripple 0.6s linear;
-                        pointer-events: none;
-                    `;
-                    
-                    const rect = this.getBoundingClientRect();
-                    const size = Math.max(rect.width, rect.height);
-                    const x = e.clientX - rect.left - size / 2;
-                    const y = e.clientY - rect.top - size / 2;
-                    
-                    ripple.style.width = ripple.style.height = size + 'px';
-                    ripple.style.left = x + 'px';
-                    ripple.style.top = y + 'px';
-                    
-                    this.appendChild(ripple);
-                    
-                    setTimeout(() => {
-                        ripple.remove();
-                    }, 600);
-                }
-            });
-        });
+        // CTA button animations are handled in js/main.js
 
-        // Add CSS animation for ripple effect
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes ripple {
-                to {
-                    transform: scale(4);
-                    opacity: 0;
-                }
-            }
-        `;
-        document.head.appendChild(style);
-
-        // Intersection Observer for counter animation
-        const observerOptions = {
-            threshold: 0.5,
-            once: true
-        };
-
-        const countUp = (element, target, duration = 2000) => {
-            let start = 0;
-            const increment = target / (duration / 16);
-            
-            const updateCount = () => {
-                start += increment;
-                if (start < target) {
-                    element.textContent = Math.floor(start) + (target === 100 ? '%' : '+');
-                    requestAnimationFrame(updateCount);
-                } else {
-                    element.textContent = target + (target === 100 ? '%' : '+');
-                }
-            };
-            
-            updateCount();
-        };
-
-        const statsObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const numberElement = entry.target.querySelector('.number');
-                    const text = numberElement.textContent;
-                    const number = parseInt(text.replace(/\D/g, ''));
-                    
-                    countUp(numberElement, number);
-                    statsObserver.unobserve(entry.target);
-                }
-            });
-        }, observerOptions);
-
-        document.querySelectorAll('.stat-item').forEach(stat => {
-            statsObserver.observe(stat);
-        });
-
+        // Stats counter animation is handled in js/main.js
         // Note: Scroll-to-top functionality and image lazy loading are handled in main.js
     </script>
 
