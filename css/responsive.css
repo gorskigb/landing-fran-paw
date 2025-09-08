@@ -84,6 +84,22 @@
         width: 100%;
     }
 
+    /* Video optimizations for mobile */
+    .video-container {
+        height: 250px; /* Reduced height for mobile */
+    }
+    
+    .loader-spinner {
+        width: 30px;
+        height: 30px;
+        border-width: 3px;
+    }
+    
+    .video-loader-text,
+    .video-error-text {
+        font-size: 1rem;
+    }
+
     .benefits-grid,
     .products-grid,
     .specs-grid {

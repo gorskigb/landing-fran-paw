@@ -19,6 +19,7 @@ FRAN-PAW is a professional Polish landing page for a leading container building 
 - As a potential customer, I want to see the company's experience statistics (500+ projects, 15+ years, 100% satisfaction) so that I can trust their expertise
 - As a visitor, I want to read about FRAN-PAW's background and specialization so that I understand their qualifications
 - As a business owner, I want to see professional branding and design so that I feel confident in their capabilities
+- As a potential customer, I want to watch a video showing the company's facilities so that I can see their manufacturing capabilities and build trust
 
 ### Product Discovery & Information
 
@@ -59,6 +60,14 @@ FRAN-PAW is a professional Polish landing page for a leading container building 
 - As a user with disabilities, I want semantic HTML and proper accessibility features so that I can navigate the site easily
 - As a visitor, I want smooth animations and visual feedback so that the experience feels professional and engaging
 
+**Epic: About Section Video Experience**
+- As a visitor, I want to see a video of the company's facilities when I view the about section so that I can get a visual understanding of their operations
+- As a user, I want the video to start playing automatically when the about section becomes visible so that I don't need to manually start it
+- As a user, I want the video to play without sound so that it doesn't disrupt my browsing experience
+- As a visitor, I want the video to play at a slower speed (0.75x) so that I can better observe the details of the facility
+- As a user, I want to see a loading indicator while the video is downloading so that I know content is being loaded
+- As a visitor, I want the video to preload but not prevent me from viewing other page content while it downloads so that my browsing experience isn't blocked
+
 ### Performance & Technical Requirements
 
 **Epic: Technical Foundation**
@@ -84,7 +93,11 @@ FRAN-PAW is a professional Polish landing page for a leading container building 
 ### About Section
 - Shows company statistics with animated counters (500+ projects, 15+ years, 100% satisfaction)
 - Includes company description and positioning
-- Professional layout with text and placeholder company image
+- Professional layout with text and video showcasing company facilities
+- Video automatically plays when about section becomes visible
+- Video plays at 0.75x speed without sound
+- Shows loading indicator while video is downloading
+- Video can be preloaded but doesn't block page content viewing
 
 ### Benefits Section
 - Displays 6 benefit cards with icons and descriptions:
