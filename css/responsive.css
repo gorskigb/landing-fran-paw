@@ -7,10 +7,10 @@
         max-width: 100%;
     }
     
-    /* Ensure all elements fit within viewport */
-    * {
+    /* Ensure key components fit within viewport */
+    .container, .hero-cta, .nav-menu,
+    .benefits-grid, .products-grid, .specs-grid {
         max-width: 100%;
-        box-sizing: border-box;
     }
 
     .nav-menu {
@@ -27,7 +27,6 @@
         visibility: hidden;
         transition: all 0.3s ease;
         width: 100%;
-        box-sizing: border-box;
     }
 
     .nav-menu.active {
@@ -42,13 +41,13 @@
 
     .hero h1 {
         font-size: 2.5rem;
-        word-wrap: break-word;
+        overflow-wrap: break-word;
         hyphens: auto;
     }
 
     .hero .subtitle {
         font-size: 1.1rem;
-        word-wrap: break-word;
+        overflow-wrap: break-word;
     }
 
     .hero-cta {
@@ -64,12 +63,12 @@
         width: 100%;
         max-width: 280px;
         text-align: center;
-        word-wrap: break-word;
+        overflow-wrap: break-word;
     }
 
     .section-title h2 {
         font-size: 2rem;
-        word-wrap: break-word;
+        overflow-wrap: break-word;
         hyphens: auto;
     }
 
@@ -102,14 +101,12 @@
         padding: 0 1rem;
         width: 100%;
         max-width: 100%;
-        box-sizing: border-box;
     }
 
     .container {
         padding: 0 1rem;
         width: 100%;
         max-width: 100%;
-        box-sizing: border-box;
     }
 
     .section {

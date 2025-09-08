@@ -612,70 +612,7 @@
             statsObserver.observe(stat);
         });
 
-        // Add scroll-to-top functionality
-        const scrollToTop = () => {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        };
-
-        // Show/hide scroll-to-top button based on scroll position
-        let scrollToTopButton = null;
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 500) {
-                if (!scrollToTopButton) {
-                    scrollToTopButton = document.createElement('button');
-                    scrollToTopButton.innerHTML = '<i class="fas fa-arrow-up"></i>';
-                    scrollToTopButton.style.cssText = `
-                        position: fixed;
-                        bottom: 2rem;
-                        right: 2rem;
-                        width: 50px;
-                        height: 50px;
-                        border-radius: 50%;
-                        background: var(--accent-orange);
-                        color: white;
-                        border: none;
-                        cursor: pointer;
-                        font-size: 1.2rem;
-                        z-index: 1000;
-                        transition: all 0.3s ease;
-                        box-shadow: var(--shadow-medium);
-                    `;
-                    scrollToTopButton.addEventListener('click', scrollToTop);
-                    scrollToTopButton.addEventListener('mouseenter', function() {
-                        this.style.transform = 'translateY(-3px)';
-                        this.style.boxShadow = 'var(--shadow-heavy)';
-                    });
-                    scrollToTopButton.addEventListener('mouseleave', function() {
-                        this.style.transform = 'translateY(0)';
-                        this.style.boxShadow = 'var(--shadow-medium)';
-                    });
-                    document.body.appendChild(scrollToTopButton);
-                }
-            } else if (scrollToTopButton) {
-                scrollToTopButton.remove();
-                scrollToTopButton = null;
-            }
-        });
-
-        // Add lazy loading for gallery images
-        const imageObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const img = entry.target;
-                    img.style.opacity = '1';
-                    imageObserver.unobserve(img);
-                }
-            });
-        });
-
-        document.querySelectorAll('.gallery-item, .about-image img').forEach(img => {
-            img.style.opacity = '0';
-            img.style.transition = 'opacity 0.5s ease';
-            imageObserver.observe(img);
-        });
+        // Note: Scroll-to-top functionality and image lazy loading are handled in main.js
     </script>
 
 </body>
