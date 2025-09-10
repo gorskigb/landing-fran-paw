@@ -89,8 +89,10 @@
                             id="aboutVideo" 
                             class="about-video"
                             muted 
-                            preload="auto"
-                            playsinline>
+                            preload="metadata"
+                            playsinline
+                            webkit-playsinline
+                            poster="assets/images/video-poster.jpg">
                             <source src="assets/videos/about-image.mp4" type="video/mp4">
                             Twoja przeglądarka nie obsługuje odtwarzania wideo.
                         </video>
@@ -433,26 +435,54 @@
             const aboutVideoLoader = document.getElementById('aboutVideoLoader');
             let isVideoLoaded = false;
             let hasPlayedOnce = false;
+            let isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            let userHasInteracted = false;
+
+            // Detect user interaction for mobile autoplay
+            const enableAutoplay = () => {
+                userHasInteracted = true;
+                document.removeEventListener('touchstart', enableAutoplay);
+                document.removeEventListener('click', enableAutoplay);
+            };
+            
+            if (isMobile) {
+                document.addEventListener('touchstart', enableAutoplay, { once: true });
+                document.addEventListener('click', enableAutoplay, { once: true });
+            }
 
             // Set video playback speed to 0.75
             aboutVideo.addEventListener('loadedmetadata', function() {
                 aboutVideo.playbackRate = 0.75;
-            });
-
-            // Handle video loading
-            aboutVideo.addEventListener('canplaythrough', function() {
                 isVideoLoaded = true;
                 aboutVideoLoader.style.display = 'none';
             });
 
+            // Handle video loading for mobile-first approach
+            aboutVideo.addEventListener('loadeddata', function() {
+                if (!isVideoLoaded) {
+                    isVideoLoaded = true;
+                    aboutVideoLoader.style.display = 'none';
+                }
+            });
+
             // Handle video loading error with retry option
             aboutVideo.addEventListener('error', function() {
+                console.error('Video loading error:', aboutVideo.error);
                 aboutVideoLoader.innerHTML = `
                     <div class="video-loader-content">
                         <div class="video-error-text">Nie udało się załadować wideo</div>
                         <button onclick="retryVideo()" style="margin-top: 10px; padding: 8px 16px; background: var(--accent-orange); color: white; border: none; border-radius: 5px; cursor: pointer;">Spróbuj ponownie</button>
                     </div>
                 `;
+            });
+
+            // Add click-to-play for mobile devices
+            aboutVideo.addEventListener('click', function() {
+                if (aboutVideo.paused) {
+                    aboutVideo.play().catch(e => console.log('Play failed:', e));
+                } else {
+                    aboutVideo.pause();
+                }
             });
 
             // Retry function for video loading
@@ -472,26 +502,70 @@
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting && isVideoLoaded && !hasPlayedOnce) {
-                        aboutVideo.play().catch(e => {
-                            console.log('Autoplay prevented by browser policy');
-                        });
-                        hasPlayedOnce = true;
+                        // Only attempt autoplay if not mobile or user has interacted
+                        if (!isMobile || userHasInteracted) {
+                            aboutVideo.play().catch(e => {
+                                console.log('Autoplay prevented by browser policy - adding play button');
+                                showPlayButton();
+                            });
+                            hasPlayedOnce = true;
+                        } else {
+                            // Show play button for mobile users
+                            showPlayButton();
+                        }
                     }
                 });
             }, {
-                threshold: 0.3, // Start playing when 30% of about section is visible - optimal balance between user engagement and not being intrusive
-                rootMargin: '0px 0px -50px 0px' // Add some margin for better UX
+                threshold: 0.3,
+                rootMargin: '0px 0px -50px 0px'
             });
+
+            // Show play button overlay for mobile devices
+            function showPlayButton() {
+                const playButton = document.createElement('div');
+                playButton.innerHTML = `
+                    <div style="
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        width: 70px;
+                        height: 70px;
+                        background: rgba(0,0,0,0.7);
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                        z-index: 3;
+                        transition: all 0.3s ease;
+                    " onmouseover="this.style.background='rgba(0,0,0,0.9)'" onmouseout="this.style.background='rgba(0,0,0,0.7)'">
+                        <i class="fas fa-play" style="color: white; font-size: 24px; margin-left: 4px;"></i>
+                    </div>
+                `;
+                
+                const videoContainer = document.querySelector('.video-container');
+                playButton.addEventListener('click', function() {
+                    aboutVideo.play().then(() => {
+                        hasPlayedOnce = true;
+                        playButton.remove();
+                    }).catch(e => console.log('Play failed:', e));
+                });
+                
+                videoContainer.appendChild(playButton);
+            }
 
             // Fallback for browsers without Intersection Observer support
             if (!('IntersectionObserver' in window)) {
-                // For older browsers, play video after it loads
-                aboutVideo.addEventListener('canplaythrough', function() {
-                    if (!hasPlayedOnce) {
+                aboutVideo.addEventListener('loadeddata', function() {
+                    if (!hasPlayedOnce && (!isMobile || userHasInteracted)) {
                         aboutVideo.play().catch(e => {
                             console.log('Autoplay prevented by browser policy');
+                            showPlayButton();
                         });
                         hasPlayedOnce = true;
+                    } else if (isMobile && !hasPlayedOnce) {
+                        showPlayButton();
                     }
                 });
             }
@@ -501,8 +575,19 @@
             // Loop video
             aboutVideo.addEventListener('ended', function() {
                 aboutVideo.currentTime = 0;
-                aboutVideo.play();
+                aboutVideo.play().catch(e => console.log('Loop play failed:', e));
             });
+
+            // Pause video when not visible (performance optimization for mobile)
+            const visibilityObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting && !aboutVideo.paused) {
+                        aboutVideo.pause();
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            visibilityObserver.observe(aboutSection);
         });
 
         // Header scroll effect
