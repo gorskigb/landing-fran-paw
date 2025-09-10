@@ -89,8 +89,10 @@
                             id="aboutVideo" 
                             class="about-video"
                             muted 
-                            preload="auto"
-                            playsinline>
+                            preload="metadata"
+                            playsinline
+                            webkit-playsinline="true"
+                            poster="assets/images/video-poster.jpg">
                             <source src="assets/videos/about-image.mp4" type="video/mp4">
                             Twoja przeglądarka nie obsługuje odtwarzania wideo.
                         </video>
@@ -427,33 +429,186 @@
             offset: 100
         });
 
-        // About video handling
-        document.addEventListener('DOMContentLoaded', function() {
+        // About video handling - extracted functions for better organization
+        function initializeVideoHandling() {
             const aboutVideo = document.getElementById('aboutVideo');
             const aboutVideoLoader = document.getElementById('aboutVideoLoader');
             let isVideoLoaded = false;
             let hasPlayedOnce = false;
+            let isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            let userHasInteracted = false;
+            let observer, visibilityObserver;
 
-            // Set video playback speed to 0.75
-            aboutVideo.addEventListener('loadedmetadata', function() {
+            // Detect user interaction for mobile autoplay
+            const enableAutoplay = () => {
+                userHasInteracted = true;
+                document.removeEventListener('touchstart', enableAutoplay);
+                document.removeEventListener('click', enableAutoplay);
+            };
+            
+            // Handle video metadata loaded
+            const handleVideoMetadataLoaded = () => {
                 aboutVideo.playbackRate = 0.75;
-            });
-
-            // Handle video loading
-            aboutVideo.addEventListener('canplaythrough', function() {
                 isVideoLoaded = true;
                 aboutVideoLoader.style.display = 'none';
-            });
+            };
 
-            // Handle video loading error with retry option
-            aboutVideo.addEventListener('error', function() {
+            // Handle video data loaded
+            const handleVideoDataLoaded = () => {
+                if (!isVideoLoaded) {
+                    isVideoLoaded = true;
+                    aboutVideoLoader.style.display = 'none';
+                }
+            };
+
+            // Handle video loading error
+            const handleVideoError = () => {
+                console.error('Video loading error:', aboutVideo.error);
                 aboutVideoLoader.innerHTML = `
                     <div class="video-loader-content">
                         <div class="video-error-text">Nie udało się załadować wideo</div>
                         <button onclick="retryVideo()" style="margin-top: 10px; padding: 8px 16px; background: var(--accent-orange); color: white; border: none; border-radius: 5px; cursor: pointer;">Spróbuj ponownie</button>
                     </div>
                 `;
-            });
+            };
+
+            // Handle video click for play/pause
+            const handleVideoClick = () => {
+                if (aboutVideo.paused) {
+                    aboutVideo.play().catch(e => console.log('Play failed:', e));
+                } else {
+                    aboutVideo.pause();
+                }
+            };
+
+            // Handle video ended for looping
+            const handleVideoEnded = () => {
+                aboutVideo.currentTime = 0;
+                aboutVideo.play().catch(e => console.log('Loop play failed:', e));
+            };
+
+            // Show play button overlay for mobile devices
+            const showPlayButton = () => {
+                const playButton = document.createElement('div');
+                playButton.innerHTML = `
+                    <div style="
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        width: 70px;
+                        height: 70px;
+                        background: rgba(0,0,0,0.7);
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                        z-index: 3;
+                        transition: all 0.3s ease;
+                    " onmouseover="this.style.background='rgba(0,0,0,0.9)'" onmouseout="this.style.background='rgba(0,0,0,0.7)'">
+                        <i class="fas fa-play" style="color: white; font-size: 24px; margin-left: 4px;"></i>
+                    </div>
+                `;
+                
+                const videoContainer = document.querySelector('.video-container');
+                const buttonElement = playButton.firstElementChild;
+                
+                // Add keyboard accessibility
+                buttonElement.setAttribute('tabindex', '0');
+                buttonElement.setAttribute('role', 'button');
+                buttonElement.setAttribute('aria-label', 'Odtwórz wideo');
+                
+                // Handle click and keyboard events
+                const playVideo = () => {
+                    aboutVideo.play().then(() => {
+                        hasPlayedOnce = true;
+                        playButton.remove();
+                    }).catch(e => console.log('Play failed:', e));
+                };
+                
+                buttonElement.addEventListener('click', playVideo);
+                buttonElement.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        playVideo();
+                    }
+                });
+                
+                videoContainer.appendChild(playButton);
+            };
+
+            // Handle intersection observer entries for autoplay
+            const handleIntersectionObserver = (entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && isVideoLoaded && !hasPlayedOnce) {
+                        // Only attempt autoplay if not mobile or user has interacted
+                        if (!isMobile || userHasInteracted) {
+                            aboutVideo.play().catch(e => {
+                                console.log('Autoplay prevented by browser policy - adding play button');
+                                showPlayButton();
+                            });
+                            hasPlayedOnce = true;
+                        } else {
+                            // Show play button for mobile users
+                            showPlayButton();
+                        }
+                    }
+                });
+            };
+
+            // Handle visibility observer for performance optimization
+            const handleVisibilityObserver = (entries) => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting && !aboutVideo.paused) {
+                        aboutVideo.pause();
+                    }
+                });
+            };
+
+            // Initialize mobile interaction detection
+            if (isMobile) {
+                document.addEventListener('touchstart', enableAutoplay, { once: true });
+                document.addEventListener('click', enableAutoplay, { once: true });
+            }
+
+            // Set up video event listeners
+            aboutVideo.addEventListener('loadedmetadata', handleVideoMetadataLoaded);
+            aboutVideo.addEventListener('loadeddata', handleVideoDataLoaded);
+            aboutVideo.addEventListener('error', handleVideoError);
+            aboutVideo.addEventListener('click', handleVideoClick);
+            aboutVideo.addEventListener('ended', handleVideoEnded);
+
+            // Set up intersection observers
+            const aboutSection = document.getElementById('about');
+            
+            if ('IntersectionObserver' in window) {
+                observer = new IntersectionObserver(handleIntersectionObserver, {
+                    threshold: 0.3,
+                    rootMargin: '0px 0px -50px 0px'
+                });
+                
+                visibilityObserver = new IntersectionObserver(handleVisibilityObserver, {
+                    threshold: 0.1
+                });
+                
+                observer.observe(aboutSection);
+                visibilityObserver.observe(aboutSection);
+            } else {
+                // Fallback for browsers without Intersection Observer support
+                console.warn('IntersectionObserver not supported, using scroll-based fallback');
+                aboutVideo.addEventListener('loadeddata', function() {
+                    if (!hasPlayedOnce && (!isMobile || userHasInteracted)) {
+                        aboutVideo.play().catch(e => {
+                            console.log('Autoplay prevented by browser policy');
+                            showPlayButton();
+                        });
+                        hasPlayedOnce = true;
+                    } else if (isMobile && !hasPlayedOnce) {
+                        showPlayButton();
+                    }
+                });
+            }
 
             // Retry function for video loading
             window.retryVideo = function() {
@@ -467,43 +622,15 @@
                 aboutVideo.load(); // Reload the video
             };
 
-            // Intersection Observer for autoplay when about section is visible
-            const aboutSection = document.getElementById('about');
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting && isVideoLoaded && !hasPlayedOnce) {
-                        aboutVideo.play().catch(e => {
-                            console.log('Autoplay prevented by browser policy');
-                        });
-                        hasPlayedOnce = true;
-                    }
-                });
-            }, {
-                threshold: 0.3, // Start playing when 30% of about section is visible - optimal balance between user engagement and not being intrusive
-                rootMargin: '0px 0px -50px 0px' // Add some margin for better UX
+            // Clean up observers on page unload to prevent memory leaks
+            window.addEventListener('beforeunload', function() {
+                observer?.disconnect();
+                visibilityObserver?.disconnect();
             });
+        }
 
-            // Fallback for browsers without Intersection Observer support
-            if (!('IntersectionObserver' in window)) {
-                // For older browsers, play video after it loads
-                aboutVideo.addEventListener('canplaythrough', function() {
-                    if (!hasPlayedOnce) {
-                        aboutVideo.play().catch(e => {
-                            console.log('Autoplay prevented by browser policy');
-                        });
-                        hasPlayedOnce = true;
-                    }
-                });
-            }
-
-            observer.observe(aboutSection);
-
-            // Loop video
-            aboutVideo.addEventListener('ended', function() {
-                aboutVideo.currentTime = 0;
-                aboutVideo.play();
-            });
-        });
+        // Initialize video handling when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initializeVideoHandling);
 
         // Header scroll effect
         window.addEventListener('scroll', function() {
